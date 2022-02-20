@@ -14,8 +14,9 @@ def parceDbc(dbcString, options):
     print('\ndbcArray\n', dbcArray)
 
     dbcData = []
-    for (index, value) in enumerate(e):
-        dbcData.append(re.findall('"(?:[^"\\]|\\.)*"|[^\s]+', value))
+    for (index, value) in enumerate(dbcArray):
+
+        dbcData.append(re.findall('"(?:[^"]|.)*"|[^\s]+', value))
 
     print('\ndbcData:\n', dbcData)
 
@@ -29,7 +30,10 @@ def parceDbc(dbcString, options):
     for (index, line) in enumerate(dbcData):
         if(not line or len(line) == 11):
             return
+
+        print(line[0])
         if(line[0] == "BO_"):
+    
             if(len(line) != 5):
                 raise Exception(
                     f"BO_ on line {index+1} does not follow DBC standard (should have five pieces of text/numbers), all signals in this message won't have a PGN or source.")
@@ -40,6 +44,7 @@ def parceDbc(dbcString, options):
                                     "description": "BO_ does not contain any SG_ lines; message does not have any signals."})
 
                 boList.append(currentBo)
+            
                 currentBo = {}
 
             [temp, canId, name, dlc] = line
@@ -261,20 +266,24 @@ def parceDbc(dbcString, options):
 
         if(len(currentBo) != 0):
             boList.append(currentBo)
-
+     
         temp_boList = []
         for x in boList:
+           
             if x != 0:
                 temp_boList.append(x)
 
-        boList = temp_boList
+    
 
-        if(options["filterDm1"] == True):
-            temp_boList = []
-            for x in boList:
-                if x != 65226:
-                    temp_boList.append(x)
-            boList = temp_boList
+        boList = temp_boList
+        if('filterDm1' in options.keys()):
+            if(options["filterDm1"] == True):
+                temp_boList = []
+                for x in boList:
+                    if x != 65226:
+                        temp_boList.append(x)
+                boList = temp_boList
+
         if(not len(boList)):
             raise Exception('Invalid DBC: Could not find any BO_ or SG_ lines')
         for val in valList:
